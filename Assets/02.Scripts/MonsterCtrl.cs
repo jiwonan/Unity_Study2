@@ -35,6 +35,20 @@ public class MonsterCtrl : MonoBehaviour
 
     private int hp = 100;
 
+    void Awake()
+    {
+        monsterTr = GetComponent<Transform>();
+
+        playerTr = GameObject.FindWithTag("PLAYER").GetComponent<Transform>();
+
+        agent = GetComponent<NavMeshAgent>();
+        agent.updateRotation = false;
+
+        anim = GetComponent<Animator>();
+
+        bloodEffect = Resources.Load<GameObject>("BloodSprayEffect");
+    }
+
     void OnEnable()
     {
         PlayerCtrl.OnPlayerDie += this.OnPlayerDie;
@@ -48,20 +62,16 @@ public class MonsterCtrl : MonoBehaviour
         PlayerCtrl.OnPlayerDie -= this.OnPlayerDie;
     }
 
-    void Start()
+    void Update()
     {
-        monsterTr = GetComponent<Transform>();
-
-        playerTr = GameObject.FindWithTag("PLAYER").GetComponent<Transform>();
-
-        agent = GetComponent<NavMeshAgent>();
-
-        anim = GetComponent<Animator>();
-
-        bloodEffect = Resources.Load<GameObject>("BloodSprayEffect");
-
-        StartCoroutine(CheckMonsterState());
-        StartCoroutine(MonsterAction());
+        if (agent.remainingDistance >= 2.0f)
+        {
+            Vector3 direction = agent.desiredVelocity;
+            Quaternion rot = Quaternion.LookRotation(direction);
+            monsterTr.rotation = Quaternion.Slerp(monsterTr.rotation,
+                                                  rot,
+                                                  Time.deltaTime * 10.0f);
+        }
     }
 
     IEnumerator CheckMonsterState()
